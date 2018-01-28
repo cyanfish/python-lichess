@@ -105,8 +105,7 @@ def _batch(fn, args, kwargs, batch_size):
 def user(username, client=None):
     return _api_get('/api/user/{}'.format(username), None, client)
 
-def users_by_team(team, **kwargs):
-    client = kwargs.pop('client', None)
+def users_by_team(team, client=None, **kwargs):
     kwargs['team'] = team
     return _api_get('/api/user', kwargs, client)
 
@@ -125,8 +124,7 @@ def users_status(ids, client=None):
 def enumerate_users_status(*args, **kwargs):
     return _batch(users_status, args, kwargs, 40)
 
-def user_games(username, **kwargs):
-    client = kwargs.pop('client', None)
+def user_games(username, client=None, **kwargs):
     return _api_get('/api/user/{}/games'.format(username), kwargs, client)
 
 def enumerate_user_games(*args, **kwargs):
@@ -135,27 +133,45 @@ def enumerate_user_games(*args, **kwargs):
 def user_activity(username, client=None):
     return _api_get('/api/user/{}/activity'.format(username), None, client)
 
-def games_between(username1, username2, **kwargs):
-    client = kwargs.pop('client', None)
+def games_between(username1, username2, client=None, **kwargs):
     return _api_get('/api/games/vs/{}/{}'.format(username1, username2), kwargs, client)
 
 def enumerate_games_between(*args, **kwargs):
     return _enum(games_between, args, kwargs)
 
-def games_by_team(team, **kwargs):
-    client = kwargs.pop('client', None)
+def games_by_team(team, client=None, **kwargs):
     return _api_get('/api/games/team/{}'.format(team), kwargs, client)
 
 def enumerate_games_by_team(*args, **kwargs):
     return _enum(games_by_team, args, kwargs)
 
-def game(id, **kwargs):
-    client = kwargs.pop('client', None)
-    return _api_get('/api/game/{}'.format(id), kwargs, client)
+def game(game_id, client=None, **kwargs):
+    return _api_get('/api/game/{}'.format(game_id), kwargs, client)
 
-def games_by_ids(ids, **kwargs):
-    client = kwargs.pop('client', None)
+def games_by_ids(ids, client=None, **kwargs):
     return _api_post('/api/games', kwargs, ','.join(ids), client)
 
 def enumerate_games_by_ids(*args, **kwargs):
     return _batch(games_by_ids, args, kwargs, 300)
+
+def tournaments(client=None, **kwargs):
+    return _api_get('/api/tournament', kwargs, client)
+
+def tournament(tournament_id, client=None, **kwargs):
+    return _api_get('/api/tournament/{}'.format(tournament_id), kwargs, client)
+
+def tournament_standings(tournament_id, client=None, **kwargs):
+    return _api_get('/api/tournament/{}'.format(tournament_id), kwargs, client)['standing']
+
+def enumerate_tournament_standings(*args, **kwargs):
+    kwargs['page'] = 1
+    while True:
+        pag = tournament_standings(*args, **kwargs)
+        for obj in pag['players']:
+            yield obj
+        if len(pag['players']) == 0:
+            break
+        kwargs['page'] += 1
+
+def tv_channels(client=None, **kwargs):
+    return _api_get('/tv/channels', kwargs, client)
