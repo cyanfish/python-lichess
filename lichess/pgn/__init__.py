@@ -1,4 +1,5 @@
 from datetime import datetime
+from six import StringIO
 
 def _node(g, spec):
     parts = spec.split('.')
@@ -35,7 +36,10 @@ def from_game(game, headers=None):
     h.append(('BlackElo', _node(g, 'players.black.rating') or '?'))
     h.append(('ECO', _node(g, 'opening.eco')))
     h.append(('Opening', _node(g, 'opening.name')))
-    h.append(('Variant', _cap(g['variant'])))
+    if g['variant'] == 'fromPosition':
+        h.append(('FEN', g['initialFen']))
+    elif g['variant'] != 'standard':
+        h.append(('Variant', _cap(g['variant'])))
     h.append(('TimeControl', _node(g, 'clock.initial') + '+' + _node(g, 'clock.increment')))
     moves = g['moves']
     pgn = ''
