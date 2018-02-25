@@ -35,6 +35,7 @@ class DefaultApiClient(object):
         else:
             time.sleep(1)
         
+        retry_count = 0
         while True:
             url = urllib.parse.urljoin(base_url, path)
             if post_data:
@@ -42,8 +43,9 @@ class DefaultApiClient(object):
             else:
                 resp = requests.get(url, params)
             if resp.status_code == 429:
-                on_rate_limit(url)
+                on_rate_limit(url, retry_count)
                 time.sleep(60)
+                retry_count += 1
             else:
                 break
         
@@ -65,7 +67,7 @@ base_url = 'https://lichess.org/'
 This does not include the /api/ prefix, since some APIs don't use it.
 """
 
-on_rate_limit = lambda url: None
+on_rate_limit = lambda url, retry_count: None
 """A handler called by :class:`~lichess.api.DefaultApiClient` when HTTP 429 is received.
 
 Set it to a new value to log rate-limiting events, or to raise an exception if you don't want indefinite retries.
