@@ -59,6 +59,9 @@ def from_game(game, headers=None):
     pgn += '\n'
     return pgn
 
+def io_from_game(game, headers=None):
+	return StringIO(from_game(game, headers))
+
 def _validate_games(games):
     if isinstance(games, dict) and 'currentPageResults' in games:
         raise ValueError('The games argument must be a list. You provided a paginator. Use [\'currentPageResults\'] to get the games list, or prefix your API call with enumerate_ to abstract away paging.')
