@@ -7,11 +7,3 @@ Welcome to python-lichess's documentation!
    
    api
    api-config
-   pgn
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
