@@ -24,12 +24,11 @@ class DefaultApiClient(object):
         self._first_call = True
     
     def call(self, path, params=None, post_data=None):
-        """Make an API call.
+        """Make an API call, prepending :data:`lichess.api.base_url` to the provided path.
 
-        Makes an HTTP request using `lichess.api.base_url`.
         Consecutive calls use a 1s delay.
         If HTTP 429 is received, retries indefinitely after a 1min delay.
-        To intercept 429s (e.g. for debugging) set `lichess.api.on_rate_limit`. This won't affect the 1min delay (unless you raise).
+        To intercept 429s (e.g. for logging) set :data:`lichess.api.on_rate_limit`. This won't affect the 1min delay (unless you raise).
         """
         if self._first_call:
             self._first_call = False
@@ -54,10 +53,23 @@ class DefaultApiClient(object):
         return resp.json()
 
 
-# Configurable defaults
 default_client = DefaultApiClient()
+"""The client object used to communicate with the lichess API.
+
+Initially set to an instance of :class:`~lichess.api.DefaultApiClient`, you can customize it to change rate-limiting or error-handling behavior.
+"""
+
 base_url = 'https://lichess.org/'
+"""The base lichess API URL used by :class:`~lichess.api.DefaultApiClient`.
+
+This does not include the /api/ prefix, since some APIs don't use it.
+"""
+
 on_rate_limit = lambda url: None
+"""A handler called by :class:`~lichess.api.DefaultApiClient` when HTTP 429 is received.
+
+Set it to a new value to log rate-limiting events, or to raise an exception if you don't want indefinite retries.
+"""
 
 
 # Helpers for API functions
@@ -103,67 +115,89 @@ def _batch(fn, args, kwargs, batch_size):
 # Actual public API functions
 
 def user(username, client=None):
+    """Wrapper for the `GET /api/user/<username> <https://github.com/ornicar/lila#get-apiuserusername-fetch-one-user>`_ endpoint."""
     return _api_get('/api/user/{}'.format(username), None, client)
 
 def users_by_team(team, client=None, **kwargs):
+    """Wrapper for the `GET /api/user <https://github.com/ornicar/lila#get-apiuser-fetch-many-users-from-a-team>`_ endpoint."""
     kwargs['team'] = team
     return _api_get('/api/user', kwargs, client)
 
 def enumerate_users_by_team(*args, **kwargs):
+    """See :data:`~lichess.api.users_by_team`. Returns a generator that makes requests for additional pages as needed."""
     return _enum(users_by_team, args, kwargs)
 
-def users_by_ids(ids, client=None):
-    return _api_post('/api/users', None, ','.join(ids), client)
+def users_by_ids(ids, client=None, **kwargs):
+    """Wrapper for the `POST /api/users <https://github.com/ornicar/lila#post-apiusers-fetch-many-users-by-id>`_ endpoint."""
+    return _api_post('/api/users', kwargs, ','.join(ids), client)
 
 def enumerate_users_by_ids(*args, **kwargs):
+    """See :data:`~lichess.api.users_by_ids`. Returns a generator that splits the IDs into multiple requests as needed."""
     return _batch(users_by_ids, args, kwargs, 300)
 
-def users_status(ids, client=None):
-    return _api_get('/api/users/status', { 'ids': ','.join(ids) }, client)
+def users_status(ids, client=None, **kwargs):
+    """Wrapper for the `GET /api/users/status <https://github.com/ornicar/lila#get-apiusersstatus-fetch-many-users-online-and-playing-flags>`_ endpoint."""
+    kwargs['ids'] = ','.join(ids)
+    return _api_get('/api/users/status', kwargs, client)
 
 def enumerate_users_status(*args, **kwargs):
+    """See :data:`~lichess.api.users_status`. Returns a generator that makes requests for additional pages as needed."""
     return _batch(users_status, args, kwargs, 40)
 
 def user_games(username, client=None, **kwargs):
+    """Wrapper for the `GET /api/user/<username>/games <https://github.com/ornicar/lila#get-apiuserusernamegames-fetch-user-games>`_ endpoint."""
     return _api_get('/api/user/{}/games'.format(username), kwargs, client)
 
 def enumerate_user_games(*args, **kwargs):
+    """See :data:`~lichess.api.user_games`. Returns a generator that makes requests for additional pages as needed."""
     return _enum(user_games, args, kwargs)
 
-def user_activity(username, client=None):
-    return _api_get('/api/user/{}/activity'.format(username), None, client)
+def user_activity(username, client=None, **kwargs):
+    """Wrapper for the `GET /api/user/<username>/activity <https://github.com/ornicar/lila#get-apiuserusernameactivity-fetch-recent-user-activity>`_ endpoint."""
+    return _api_get('/api/user/{}/activity'.format(username), kwargs, client)
 
 def games_between(username1, username2, client=None, **kwargs):
+    """Wrapper for the `GET /api/games/vs/<username>/<username> <https://github.com/ornicar/lila#get-apigamesvsusernameusername-fetch-games-between-2-users>`_ endpoint."""
     return _api_get('/api/games/vs/{}/{}'.format(username1, username2), kwargs, client)
 
 def enumerate_games_between(*args, **kwargs):
+    """See :data:`~lichess.api.games_between`. Returns a generator that makes requests for additional pages as needed."""
     return _enum(games_between, args, kwargs)
 
 def games_by_team(team, client=None, **kwargs):
+    """Wrapper for the `GET /api/games/team/<teamId> <https://github.com/ornicar/lila#get-apigamesteamteamid-fetch-games-between-players-of-a-team>`_ endpoint."""
     return _api_get('/api/games/team/{}'.format(team), kwargs, client)
 
 def enumerate_games_by_team(*args, **kwargs):
+    """See :data:`~lichess.api.games_by_team`. Returns a generator that makes requests for additional pages as needed."""
     return _enum(games_by_team, args, kwargs)
 
 def game(game_id, client=None, **kwargs):
+    """Wrapper for the `GET /api/game/{id} <https://github.com/ornicar/lila#get-apigameid-fetch-one-game-by-id>`_ endpoint."""
     return _api_get('/api/game/{}'.format(game_id), kwargs, client)
 
 def games_by_ids(ids, client=None, **kwargs):
+    """Wrapper for the `POST /api/games <https://github.com/ornicar/lila#post-apigames-fetch-many-games-by-id>`_ endpoint."""
     return _api_post('/api/games', kwargs, ','.join(ids), client)
 
 def enumerate_games_by_ids(*args, **kwargs):
+    """See :data:`~lichess.api.games_by_ids`. Returns a generator that splits the IDs into multiple requests as needed."""
     return _batch(games_by_ids, args, kwargs, 300)
 
 def tournaments(client=None, **kwargs):
+    """Wrapper for the `GET /api/tournament <https://github.com/ornicar/lila#get-apitournament-fetch-current-tournaments>`_ endpoint."""
     return _api_get('/api/tournament', kwargs, client)
 
 def tournament(tournament_id, client=None, **kwargs):
+    """Wrapper for the `GET /api/tournament/<tournamentId> <https://github.com/ornicar/lila#get-apitournamenttournamentid-fetch-one-tournament>`_ endpoint."""
     return _api_get('/api/tournament/{}'.format(tournament_id), kwargs, client)
 
 def tournament_standings(tournament_id, client=None, **kwargs):
+    """Wrapper for the `GET /api/tournament/<tournamentId> <https://github.com/ornicar/lila#get-apitournamenttournamentid-fetch-one-tournament>`_ endpoint."""
     return _api_get('/api/tournament/{}'.format(tournament_id), kwargs, client)['standing']
 
 def enumerate_tournament_standings(*args, **kwargs):
+    """See :data:`~lichess.api.tournament_standings`. Returns a generator that makes requests for additional pages as needed."""
     kwargs['page'] = 1
     while True:
         pag = tournament_standings(*args, **kwargs)
@@ -174,4 +208,5 @@ def enumerate_tournament_standings(*args, **kwargs):
         kwargs['page'] += 1
 
 def tv_channels(client=None, **kwargs):
+    """Wrapper for the `GET /tv/channels <https://github.com/ornicar/lila#get-tvchannels-fetch-current-tournaments>`_ endpoint."""
     return _api_get('/tv/channels', kwargs, client)
