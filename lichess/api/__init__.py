@@ -5,7 +5,10 @@ from six.moves import urllib
 
 
 class ApiError(Exception):
-    """The default class for API exceptions."""
+    """The base class for API exceptions."""
+
+class ApiHttpError(ApiError):
+    """The class for API exceptions caused by an HTTP error code."""
 
     def __init__(self, http_status, url, response_text):
         self.http_status = http_status
@@ -28,7 +31,7 @@ class DefaultApiClient(object):
 
         Consecutive calls use a 1s delay.
         If HTTP 429 is received, retries indefinitely after a 1min delay.
-        To intercept 429s (e.g. for logging) set :data:`lichess.api.on_rate_limit`. This won't affect the 1min delay (unless you raise).
+        To log or raise an exception on a 429, set :data:`lichess.api.on_rate_limit`.
         """
         if self._first_call:
             self._first_call = False
@@ -50,7 +53,7 @@ class DefaultApiClient(object):
                 break
         
         if resp.status_code != 200:
-            raise ApiError(resp.status_code, url, resp.text)
+            raise ApiHttpError(resp.status_code, url, resp.text)
         
         return resp.json()
 
@@ -71,6 +74,11 @@ on_rate_limit = lambda url, retry_count: None
 """A handler called by :class:`~lichess.api.DefaultApiClient` when HTTP 429 is received.
 
 Set it to a new value to log rate-limiting events, or to raise an exception if you don't want indefinite retries.
+
+>>> def on_rate_limit(url, retry_count):
+>>>     if retry_count > 3:
+>>>         raise lichess.api.ApiError('Exceeded max retries')
+>>> lichess.api.on_rate_limit = on_rate_limit
 """
 
 
@@ -116,9 +124,14 @@ def _batch(fn, args, kwargs, batch_size):
 
 # Actual public API functions
 
-def user(username, client=None):
-    """Wrapper for the `GET /api/user/<username> <https://github.com/ornicar/lila#get-apiuserusername-fetch-one-user>`_ endpoint."""
-    return _api_get('/api/user/{}'.format(username), None, client)
+def user(username, client=None, **kwargs):
+    """Wrapper for the `GET /api/user/<username> <https://github.com/ornicar/lila#get-apiuserusername-fetch-one-user>`_ endpoint.
+    
+    >>> user = lichess.api.user('thibault')
+    >>> print(user.get('perfs', {}).get('blitz', {}).get('rating'))
+    1617
+    """
+    return _api_get('/api/user/{}'.format(username), kwargs, client)
 
 def users_by_team(team, client=None, **kwargs):
     """Wrapper for the `GET /api/user <https://github.com/ornicar/lila#get-apiuser-fetch-many-users-from-a-team>`_ endpoint."""
@@ -126,7 +139,13 @@ def users_by_team(team, client=None, **kwargs):
     return _api_get('/api/user', kwargs, client)
 
 def enumerate_users_by_team(*args, **kwargs):
-    """See :data:`~lichess.api.users_by_team`. Returns a generator that makes requests for additional pages as needed."""
+    """See :data:`~lichess.api.users_by_team`. Returns a generator that makes requests for additional pages as needed.
+
+    >>> users = lichess.api.enumerate_users_by_team('coders')
+    >>> ratings = [u.get('perfs', {}).get('blitz', {}).get('rating') for u in users]
+    >>> print(ratings)
+    [1349, 1609, ...]
+    """
     return _enum(users_by_team, args, kwargs)
 
 def users_by_ids(ids, client=None, **kwargs):
@@ -134,7 +153,13 @@ def users_by_ids(ids, client=None, **kwargs):
     return _api_post('/api/users', kwargs, ','.join(ids), client)
 
 def enumerate_users_by_ids(*args, **kwargs):
-    """See :data:`~lichess.api.users_by_ids`. Returns a generator that splits the IDs into multiple requests as needed."""
+    """See :data:`~lichess.api.users_by_ids`. Returns a generator that splits the IDs into multiple requests as needed.
+
+    >>> users = lichess.api.enumerate_users_by_ids(['thibault', 'cyanfish'])
+    >>> ratings = [u.get('perfs', {}).get('blitz', {}).get('rating') for u in users]
+    >>> print(ratings)
+    [1617, 1948]
+    """
     return _batch(users_by_ids, args, kwargs, 300)
 
 def users_status(ids, client=None, **kwargs):
@@ -143,7 +168,13 @@ def users_status(ids, client=None, **kwargs):
     return _api_get('/api/users/status', kwargs, client)
 
 def enumerate_users_status(*args, **kwargs):
-    """See :data:`~lichess.api.users_status`. Returns a generator that makes requests for additional pages as needed."""
+    """See :data:`~lichess.api.users_status`. Returns a generator that makes requests for additional pages as needed.
+
+    >>> users = lichess.api.enumerate_users_by_ids(['thibault', 'cyanfish'])
+    >>> online_count = len([u for u in users if u['online']])
+    >>> print(online_count)
+    1
+    """
     return _batch(users_status, args, kwargs, 40)
 
 def user_games(username, client=None, **kwargs):

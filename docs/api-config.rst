@@ -5,4 +5,4 @@ The :class:`~lichess.api.DefaultApiClient` is used to perform the actual HTTP re
 Alternatively, you can create your own API client if you need more customizability (e.g. to coordinate API use over multiple threads). To use a custom client, set :class:`~lichess.api.default_client` or use the :data:`client` parameter in the API method wrapper.
    
 .. automodule:: lichess.api
-    :members: ApiError, DefaultApiClient, default_client, base_url, on_rate_limit
+    :members: ApiError, ApiHttpError, DefaultApiClient, default_client, base_url, on_rate_limit
