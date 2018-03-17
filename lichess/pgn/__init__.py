@@ -98,7 +98,7 @@ def io_from_game(game, headers=None):
 
 def _validate_games(games):
     if isinstance(games, dict) and 'currentPageResults' in games:
-        raise ValueError('The games argument must be a list. You provided a paginator. Use [\'currentPageResults\'] to get the games list, or prefix your API call with enumerate_ to abstract away paging.')
+        raise ValueError('The games argument must be a list. You provided a paginator. Use [\'currentPageResults\'] to get the games list, or use an API method that returns a generator.')
 
 def from_games(games, headers=None):
     """Converts an enumerable of games from the lichess API to a PGN string.
@@ -108,7 +108,7 @@ def from_games(games, headers=None):
     
     >>> import itertools
     >>> 
-    >>> games = lichess.api.enumerate_user_games('cyanfish', with_moves=1)
+    >>> games = lichess.api.user_games('cyanfish', with_moves=1)
     >>> pgn = lichess.pgn.from_games(itertools.islice(games, 5))
     >>> print(pgn.count('\\n'))
     66
@@ -125,7 +125,7 @@ def save_games(games, path, headers=None):
 
     >>> import itertools
     >>> 
-    >>> games = lichess.api.enumerate_user_games('cyanfish', with_moves=1)
+    >>> games = lichess.api.user_games('cyanfish', with_moves=1)
     >>> lichess.pgn.save_games(itertools.islice(games, 5), 'mylast5games.pgn')
     
     """
