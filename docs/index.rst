@@ -59,3 +59,10 @@ p . . . . . . p
 P . . P . . . P
 . P P . . P P .
 . . K R . . . .
+
+Installing
+----------
+
+::
+
+    pip install python-lichess

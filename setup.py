@@ -5,14 +5,18 @@ import sys
 import platform
 import re
 
+def read_description():
+    return io.open(os.path.join(os.path.dirname(__file__), "README.rst"), encoding="utf-8").read()
+
 setuptools.setup(
     name="python-lichess",
-    version='0.1',
+    version='0.3',
     description='A client for the lichess.org API',
+    long_description=read_description(),
     license="GPL3",
     keywords="chess lichess api",
     url="https://github.com/cyanfish/python-lichess",
-    packages=["lichess"],
+    packages=["lichess.api", "lichess.pgn"],
     python_requires=">=2.7,!=3.0.*,!=3.1.*,!=3.2.*",
     classifiers=[
         "Development Status :: 4 - Beta",
