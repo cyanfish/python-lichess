@@ -7,3 +7,4 @@ Welcome to python-lichess's documentation!
    
    api
    api-config
+   pgn
