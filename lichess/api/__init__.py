@@ -204,7 +204,7 @@ def game(game_id, **kwargs):
 def games_by_ids(ids, **kwargs):
     """Wrapper for the `POST /api/games <https://github.com/ornicar/lila#post-apigames-fetch-many-games-by-id>`_ endpoint.
     Returns a generator that splits the IDs into multiple requests as needed."""
-    return _batch(games_by_ids, [ids], kwargs, 300)
+    return _batch(games_by_ids_page, [ids], kwargs, 300)
 
 def games_by_ids_page(ids, **kwargs):
     """Wrapper for the `POST /api/games <https://github.com/ornicar/lila#post-apigames-fetch-many-games-by-id>`_ endpoint.

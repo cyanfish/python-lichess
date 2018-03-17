@@ -5,7 +5,7 @@ The module :mod:`lichess.api` provides thin wrappers around the `lichess API <ht
 
 In addition to the API parameters, each function takes an optional :data:`client` argument. See :doc:`api-config` for more information.
 
-If you want to handle paging manually, append :data:`_page` to the name of a function that returns a generator.
+By default, paging is handled automatically by a returned generator. If you want to handle paging manually, append :data:`_page` to the name of a function that returns a generator.
 For example, :data:`~lichess.api.user_games` becomes :data:`~lichess.api.user_games_page`.
 
 .. automodule:: lichess.api

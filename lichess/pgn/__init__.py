@@ -82,8 +82,8 @@ def io_from_game(game, headers=None):
     >>> import lichess.pgn
     >>> import chess.pgn
     >>> 
-    >>> game_source = lichess.api.game('Qa7FJNk2', with_moves=1)
-    >>> game = chess.pgn.read_game(lichess.pgn.io_from_game(game_source))
+    >>> api_game = lichess.api.game('Qa7FJNk2', with_moves=1)
+    >>> game = chess.pgn.read_game(lichess.pgn.io_from_game(api_game))
     >>> print(game.end().board())
     . . k . R b r .
     . p p r . N p .
