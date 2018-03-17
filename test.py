@@ -37,15 +37,15 @@ class ApiIntegrationTestCase(unittest.TestCase):
     
     def test_game(self):
         game = lichess.api.game('Qa7FJNk2', with_moves=1)
-        self.assertEqual(type(game['moves']), str)
+        self.assertEqual(type(game['moves']), type(u''))
     
     def test_games_by_ids(self):
         games = lichess.api.games_by_ids(['Qa7FJNk2', '4M973EVR'], with_moves=1)
         lst = list(games)
         moves1 = lst[0]['moves']
         moves2 = lst[1]['moves']
-        self.assertEqual(type(moves1), str)
-        self.assertEqual(type(moves2), str)
+        self.assertEqual(type(moves1), type(u''))
+        self.assertEqual(type(moves2), type(u''))
         self.assertNotEqual(moves1, moves2)
 
     def test_user_games(self):
@@ -53,8 +53,8 @@ class ApiIntegrationTestCase(unittest.TestCase):
         lst = list(itertools.islice(games, 2))
         moves1 = lst[0]['moves']
         moves2 = lst[1]['moves']
-        self.assertEqual(type(moves1), str)
-        self.assertEqual(type(moves2), str)
+        self.assertEqual(type(moves1), type(u''))
+        self.assertEqual(type(moves2), type(u''))
         self.assertNotEqual(moves1, moves2)
     
     def test_games_between(self):
@@ -62,8 +62,8 @@ class ApiIntegrationTestCase(unittest.TestCase):
         lst = list(itertools.islice(games, 2))
         moves1 = lst[0]['moves']
         moves2 = lst[1]['moves']
-        self.assertEqual(type(moves1), str)
-        self.assertEqual(type(moves2), str)
+        self.assertEqual(type(moves1), type(u''))
+        self.assertEqual(type(moves2), type(u''))
         self.assertNotEqual(moves1, moves2)
 
     def test_games_by_team(self):
@@ -71,8 +71,8 @@ class ApiIntegrationTestCase(unittest.TestCase):
         lst = list(itertools.islice(games, 2))
         moves1 = lst[0]['moves']
         moves2 = lst[1]['moves']
-        self.assertEqual(type(moves1), str)
-        self.assertEqual(type(moves2), str)
+        self.assertEqual(type(moves1), type(u''))
+        self.assertEqual(type(moves2), type(u''))
         self.assertNotEqual(moves1, moves2)
     
     def test_tournaments(self):
