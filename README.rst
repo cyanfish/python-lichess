@@ -9,7 +9,7 @@ This is a client library for the `lichess.org <https://lichess.org>`_ `API <http
 
 * Adaptable to API changes
 
-* Easy to `integrate <pgn.html#lichess.pgn.io_from_game>`_ with `python-chess <https://github.com/niklasf/python-chess>`_
+* Easy to integrate with `python-chess <https://github.com/niklasf/python-chess>`_
 
 Have a look at some short examples. For more, check out the `full documentation <http://python-lichess.readthedocs.io/>`_.
 
