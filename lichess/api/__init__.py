@@ -188,6 +188,30 @@ def users_status_page(ids, **kwargs):
     kwargs['ids'] = ','.join(ids)
     return _api_get('/api/users/status', kwargs)
 
+def user_activity(username, **kwargs):
+    """Wrapper for the `GET /api/user/<username>/activity <https://github.com/ornicar/lila#get-apiuserusernameactivity-fetch-recent-user-activity>`_ endpoint."""
+    return _api_get('/api/user/{}/activity'.format(username), kwargs)
+
+def game(game_id, **kwargs):
+    """Wrapper for the `GET /api/game/{id} <https://github.com/ornicar/lila#get-apigameid-fetch-one-game-by-id>`_ endpoint.
+
+    >>> game = lichess.api.game('Qa7FJNk2', with_moves=1)
+    >>> print(game['moves'])
+    e4 e5 Nf3 Nc6 Bc4 Qf6 d3 h6 ...
+    """
+    return _api_get('/api/game/{}'.format(game_id), kwargs)
+
+def games_by_ids(ids, **kwargs):
+    """Wrapper for the `POST /api/games <https://github.com/ornicar/lila#post-apigames-fetch-many-games-by-id>`_ endpoint.
+    Returns a generator that splits the IDs into multiple requests as needed."""
+    return _batch(games_by_ids, [ids], kwargs, 300)
+
+def games_by_ids_page(ids, **kwargs):
+    """Wrapper for the `POST /api/games <https://github.com/ornicar/lila#post-apigames-fetch-many-games-by-id>`_ endpoint.
+    Use :data:`~lichess.api.games_by_ids` to avoid manual pagination.
+    """
+    return _api_post('/api/games', kwargs, ','.join(ids))
+
 def user_games(username, **kwargs):
     """Wrapper for the `GET /api/user/<username>/games <https://github.com/ornicar/lila#get-apiuserusernamegames-fetch-user-games>`_ endpoint.
     Returns a generator that makes requests for additional pages as needed.
@@ -195,9 +219,10 @@ def user_games(username, **kwargs):
     >>> import itertools
     >>> 
     >>> games = lichess.api.user_games('cyanfish', with_moves=1)
+    >>> first_500 = itertools.islice(games, 500)
     >>> # Use itertools.ifilter in Python 2
-    >>> blitz_games = filter(lambda g: g.get('speed') == 'blitz', games)
-    >>> won_games = filter(lambda g: g.get('players', {}).get(g.get('winner'), {}).get('userId') == 'cyanfish', blitz_games)
+    >>> blitz_games = filter(lambda g: g['speed'] == 'blitz', first_500)
+    >>> won_games = filter(lambda g: g['players'].get(g.get('winner'), {}).get('userId') == 'cyanfish', blitz_games)
     >>> first_10 = itertools.islice(won_games, 10)
     >>> game_list = list(first_10)
     >>> print(len(game_list))
@@ -210,10 +235,6 @@ def user_games_page(username, **kwargs):
     Use :data:`~lichess.api.user_games` to avoid manual pagination.
     """
     return _api_get('/api/user/{}/games'.format(username), kwargs)
-
-def user_activity(username, **kwargs):
-    """Wrapper for the `GET /api/user/<username>/activity <https://github.com/ornicar/lila#get-apiuserusernameactivity-fetch-recent-user-activity>`_ endpoint."""
-    return _api_get('/api/user/{}/activity'.format(username), kwargs)
 
 def games_between(username1, username2, **kwargs):
     """Wrapper for the `GET /api/games/vs/<username>/<username> <https://github.com/ornicar/lila#get-apigamesvsusernameusername-fetch-games-between-2-users>`_ endpoint.
@@ -236,26 +257,6 @@ def games_by_team_page(team, **kwargs):
     Use :data:`~lichess.api.games_by_team` to avoid manual pagination.
     """
     return _api_get('/api/games/team/{}'.format(team), kwargs)
-
-def game(game_id, **kwargs):
-    """Wrapper for the `GET /api/game/{id} <https://github.com/ornicar/lila#get-apigameid-fetch-one-game-by-id>`_ endpoint.
-
-    >>> game = lichess.api.game('Qa7FJNk2', with_moves=1)
-    >>> print(game['moves'])
-    e4 e5 Nf3 Nc6 Bc4 Qf6 d3 h6 ...
-    """
-    return _api_get('/api/game/{}'.format(game_id), kwargs)
-
-def games_by_ids(ids, **kwargs):
-    """Wrapper for the `POST /api/games <https://github.com/ornicar/lila#post-apigames-fetch-many-games-by-id>`_ endpoint.
-    Returns a generator that splits the IDs into multiple requests as needed."""
-    return _batch(games_by_ids, [ids], kwargs, 300)
-
-def games_by_ids_page(ids, **kwargs):
-    """Wrapper for the `POST /api/games <https://github.com/ornicar/lila#post-apigames-fetch-many-games-by-id>`_ endpoint.
-    Use :data:`~lichess.api.games_by_ids` to avoid manual pagination.
-    """
-    return _api_post('/api/games', kwargs, ','.join(ids))
 
 def tournaments(**kwargs):
     """Wrapper for the `GET /api/tournament <https://github.com/ornicar/lila#get-apitournament-fetch-current-tournaments>`_ endpoint."""
