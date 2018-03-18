@@ -157,6 +157,8 @@ def users_by_ids(ids, **kwargs):
     """Wrapper for the `POST /api/users <https://github.com/ornicar/lila#post-apiusers-fetch-many-users-by-id>`_ endpoint.
     Returns a generator that splits the IDs into multiple requests as needed.
 
+    Note: Use :data:`~lichess.api.users_status` when possible, since it is cheaper and not rate-limited.
+
     >>> users = lichess.api.users_by_ids(['thibault', 'cyanfish'])
     >>> ratings = [u.get('perfs', {}).get('blitz', {}).get('rating') for u in users]
     >>> print(ratings)
@@ -174,7 +176,9 @@ def users_status(ids, **kwargs):
     """Wrapper for the `GET /api/users/status <https://github.com/ornicar/lila#get-apiusersstatus-fetch-many-users-online-and-playing-flags>`_ endpoint.
     Returns a generator that makes requests for additional pages as needed.
 
-    >>> users = lichess.api.users_by_ids(['thibault', 'cyanfish'])
+    Note: This endpoint is cheap and not rate-limited. Use it instead of :data:`~lichess.api.users_by_ids` when possible.
+
+    >>> users = lichess.api.users_status(['thibault', 'cyanfish'])
     >>> online_count = len([u for u in users if u['online']])
     >>> print(online_count)
     1

@@ -21,7 +21,7 @@ Getting a user's rating:
 >>> print(user['perfs']['blitz']['rating'])
 1617
 
-Seeing who's online and playing:
+Checking who's online and playing:
 
 >>> import lichess.api
 >>>
@@ -31,7 +31,7 @@ Seeing who's online and playing:
 >>> print(online, playing)
 ['thibault', 'cyanfish'] ['cyanfish']
 
-Saving a PGN of the user's last 200 games:
+Saving a PGN of a user's last 200 games:
 
 >>> import lichess.api
 >>> import lichess.pgn
