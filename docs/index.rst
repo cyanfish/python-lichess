@@ -32,6 +32,16 @@ Getting a user's rating:
 >>> print(user['perfs']['blitz']['rating'])
 1617
 
+Seeing who's online and playing:
+
+>>> import lichess.api
+>>>
+>>> users = list(lichess.api.users_status(['thibault', 'cyanfish']))
+>>> online = [u['id'] for u in users if u['online']]
+>>> playing = [u['id'] for u in users if u['playing']]
+>>> print(online, playing)
+['thibault', 'cyanfish'] ['cyanfish']
+
 Saving a PGN of the user's last 200 games:
 
 >>> import lichess.api
