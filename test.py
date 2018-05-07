@@ -57,15 +57,6 @@ class ApiIntegrationTestCase(unittest.TestCase):
         self.assertEqual(type(moves2), type(u''))
         self.assertNotEqual(moves1, moves2)
     
-    def test_games_between(self):
-        games = lichess.api.games_between('atrophied', 'cyanfish', with_moves=1, nb=10)
-        lst = list(itertools.islice(games, 2))
-        moves1 = lst[0]['moves']
-        moves2 = lst[1]['moves']
-        self.assertEqual(type(moves1), type(u''))
-        self.assertEqual(type(moves2), type(u''))
-        self.assertNotEqual(moves1, moves2)
-
     def test_games_by_team(self):
         games = lichess.api.games_by_team('programfox-senseifox-fanclub', with_moves=1, nb=10)
         lst = list(itertools.islice(games, 2))

@@ -56,18 +56,19 @@ class DefaultApiClient(object):
         if isinstance(auth, str):
             auth = lichess.auth.OAuthToken(auth)
         headers = auth.headers()
+        stream = format.stream(object_type)
         content_type = format.content_type(object_type)
         if content_type:
-            headers['Content-Type'] = content_type
+            headers['Accept'] = content_type
         cookies = auth.cookies()
 
         retry_count = 0
         while True:
             url = urllib.parse.urljoin(self.base_url, path)
             if post_data:
-                resp = requests.post(url, params=params, data=post_data, headers=headers, cookies=cookies)
+                resp = requests.post(url, params=params, data=post_data, headers=headers, cookies=cookies, stream=stream)
             else:
-                resp = requests.get(url, params, headers=headers, cookies=cookies)
+                resp = requests.get(url, params, headers=headers, cookies=cookies, stream=stream)
             if resp.status_code == 429:
                 self.on_rate_limit(url, retry_count)
                 time.sleep(60)
@@ -98,14 +99,17 @@ Initially set to an instance of :class:`~lichess.api.DefaultApiClient`.
 
 # Helpers for API functions
 
-def _api_get(path, params, **kwargs):
+def _api_get(path, params, object_type=lichess.format.PUBLIC_API_OBJECT):
     client = params.pop('client', default_client)
     auth = params.pop('auth', lichess.auth.EMPTY)
-    return client.call(path, params, auth=auth, **kwargs)
+    format = params.pop('format', lichess.format.JSON)
+    return client.call(path, params, auth=auth, format=format, object_type=object_type)
 
-def _api_post(path, params, post_data, **kwargs):
+def _api_post(path, params, post_data, object_type=lichess.format.PUBLIC_API_OBJECT):
     client = params.pop('client', default_client)
-    return client.call(path, params, post_data, **kwargs)
+    auth = params.pop('auth', lichess.auth.EMPTY)
+    format = params.pop('format', lichess.format.JSON)
+    return client.call(path, params, post_data, auth=auth, format=format, object_type=object_type)
 
 def _enum(fn, args, kwargs):
     if 'nb' not in kwargs:
@@ -148,21 +152,14 @@ def user(username, **kwargs):
 
 def users_by_team(team, **kwargs):
     """Wrapper for the `GET /api/user <https://github.com/ornicar/lila#get-apiuser-fetch-many-users-from-a-team>`_ endpoint.
-    Returns a generator that makes requests for additional pages as needed.
+    Returns a generator that streams the user data.
 
     >>> users = lichess.api.users_by_team('coders')
     >>> ratings = [u.get('perfs', {}).get('blitz', {}).get('rating') for u in users]
     >>> print(ratings)
     [1349, 1609, ...]
     """
-    return _enum(users_by_team_page, [team], kwargs)
-
-def users_by_team_page(team, **kwargs):
-    """Wrapper for the `GET /api/user <https://github.com/ornicar/lila#get-apiuser-fetch-many-users-from-a-team>`_ endpoint.
-    Use :data:`~lichess.api.users_by_team` to avoid manual pagination.
-    """
-    kwargs['team'] = team
-    return _api_get('/api/user', kwargs)
+    return _api_get('/team/{}/users'.format(team), kwargs, object_type=lichess.format.STREAM_OBJECT)
 
 def users_by_ids(ids, **kwargs):
     """Wrapper for the `POST /api/users <https://github.com/ornicar/lila#post-apiusers-fetch-many-users-by-id>`_ endpoint.
@@ -229,7 +226,7 @@ def games_by_ids_page(ids, **kwargs):
 
 def user_games(username, **kwargs):
     """Wrapper for the `GET /api/user/<username>/games <https://github.com/ornicar/lila#get-apiuserusernamegames-fetch-user-games>`_ endpoint.
-    Returns a generator that makes requests for additional pages as needed.
+    Returns a generator that streams game data.
 
     >>> import itertools
     >>> 
@@ -243,24 +240,7 @@ def user_games(username, **kwargs):
     >>> print(len(game_list))
     10
     """
-    return _enum(user_games_page, [username], kwargs)
-
-def user_games_page(username, **kwargs):
-    """Wrapper for the `GET /api/user/<username>/games <https://github.com/ornicar/lila#get-apiuserusernamegames-fetch-user-games>`_ endpoint.
-    Use :data:`~lichess.api.user_games` to avoid manual pagination.
-    """
-    return _api_get('/api/user/{}/games'.format(username), kwargs)
-
-def games_between(username1, username2, **kwargs):
-    """Wrapper for the `GET /api/games/vs/<username>/<username> <https://github.com/ornicar/lila#get-apigamesvsusernameusername-fetch-games-between-2-users>`_ endpoint.
-    Returns a generator that makes requests for additional pages as needed."""
-    return _enum(games_between_page, [username1, username2], kwargs)
-
-def games_between_page(username1, username2, **kwargs):
-    """Wrapper for the `GET /api/games/vs/<username>/<username> <https://github.com/ornicar/lila#get-apigamesvsusernameusername-fetch-games-between-2-users>`_ endpoint.
-    Use :data:`~lichess.api.games_between` to avoid manual pagination.
-    """
-    return _api_get('/api/games/vs/{}/{}'.format(username1, username2), kwargs)
+    return _api_get('/games/export/{}'.format(username), kwargs, object_type=lichess.format.GAME_STREAM_OBJECT)
 
 def games_by_team(team, **kwargs):
     """Wrapper for the `GET /api/games/team/<teamId> <https://github.com/ornicar/lila#get-apigamesteamteamid-fetch-games-between-players-of-a-team>`_ endpoint.
@@ -303,6 +283,6 @@ def tv_channels(**kwargs):
     """Wrapper for the `GET /tv/channels <https://github.com/ornicar/lila#get-tvchannels-fetch-current-tournaments>`_ endpoint."""
     return _api_get('/tv/channels', kwargs)
 
-def login(username, password, **kwargs):
-    cookie_jar = _api_post('/login', kwargs, {'username': username, 'password': password}, format=lichess.format.COOKIES)
+def login(username, password):
+    cookie_jar = _api_post('/login', {'format': lichess.format.COOKIES}, {'username': username, 'password': password})
     return lichess.auth.Cookie(cookie_jar)

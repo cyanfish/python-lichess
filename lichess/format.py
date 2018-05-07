@@ -3,6 +3,7 @@ import re
 import json
 
 GAME_STREAM_OBJECT = 'game_stream'
+STREAM_OBJECT = 'stream'
 PUBLIC_API_OBJECT = 'public_api'
 MOBILE_API_OBJECT = 'mobile_api'
 
@@ -11,6 +12,12 @@ class _FormatBase(object):
 
     def content_type(self, object_type):
         return None
+    
+    def stream(self, object_type):
+        return False
+    
+    def parse(self, object_type, resp):
+        pass
 
 
 class _Pgn(_FormatBase):
@@ -48,15 +55,18 @@ PYCHESS = _PyChess()
 class _Json(_FormatBase):
 
     def content_type(self, object_type):
-        if object_type == GAME_STREAM_OBJECT:
+        if object_type == STREAM_OBJECT or object_type == GAME_STREAM_OBJECT:
             return 'application/x-ndjson'
         if object_type == MOBILE_API_OBJECT:
             return 'application/vnd.lichess.v3+json'
         return None
+    
+    def stream(self, object_type):
+        return object_type == STREAM_OBJECT or object_type == GAME_STREAM_OBJECT
 
     def parse(self, object_type, resp):
-        if object_type == GAME_STREAM_OBJECT:
-            return [json.loads(s) for s in re.split('(<=}\n)(?={)', resp.text)]
+        if object_type == STREAM_OBJECT or object_type == GAME_STREAM_OBJECT:
+            return (json.loads(s) for s in resp.iter_lines())
         return json.loads(resp.text)
 
 
