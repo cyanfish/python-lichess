@@ -2,6 +2,8 @@ import json
 import requests
 import time
 from six.moves import urllib
+import lichess.format
+import lichess.auth
 
 
 class ApiError(Exception):
@@ -40,7 +42,7 @@ class DefaultApiClient(object):
         if max_retries is not None:
             self.max_retries = max_retries
     
-    def call(self, path, params=None, post_data=None):
+    def call(self, path, params=None, post_data=None, auth=lichess.auth.EMPTY, format=lichess.format.JSON, object_type=lichess.format.PUBLIC_API_OBJECT):
         """Makes an API call, prepending :data:`~lichess.api.DefaultApiClient.base_url` to the provided path. HTTP GET is used unless :data:`post_data` is provided.
 
         Consecutive calls use a 1s delay.
@@ -51,13 +53,21 @@ class DefaultApiClient(object):
         else:
             time.sleep(1)
         
+        if isinstance(auth, str):
+            auth = lichess.auth.OAuthToken(auth)
+        headers = auth.headers()
+        content_type = format.content_type(object_type)
+        if content_type:
+            headers['Content-Type'] = content_type
+        cookies = auth.cookies()
+
         retry_count = 0
         while True:
             url = urllib.parse.urljoin(self.base_url, path)
             if post_data:
-                resp = requests.post(url, params=params, data=post_data)
+                resp = requests.post(url, params=params, data=post_data, headers=headers, cookies=cookies)
             else:
-                resp = requests.get(url, params)
+                resp = requests.get(url, params, headers=headers, cookies=cookies)
             if resp.status_code == 429:
                 self.on_rate_limit(url, retry_count)
                 time.sleep(60)
@@ -68,7 +78,7 @@ class DefaultApiClient(object):
         if resp.status_code != 200:
             raise ApiHttpError(resp.status_code, url, resp.text)
         
-        return resp.json()
+        return format.parse(object_type, resp)
     
     def on_rate_limit(self, url, retry_count):
         """A handler called when HTTP 429 is received.
@@ -88,13 +98,14 @@ Initially set to an instance of :class:`~lichess.api.DefaultApiClient`.
 
 # Helpers for API functions
 
-def _api_get(path, params):
+def _api_get(path, params, **kwargs):
     client = params.pop('client', default_client)
-    return client.call(path, params)
+    auth = params.pop('auth', lichess.auth.EMPTY)
+    return client.call(path, params, auth=auth, **kwargs)
 
-def _api_post(path, params, post_data):
+def _api_post(path, params, post_data, **kwargs):
     client = params.pop('client', default_client)
-    return client.call(path, params, post_data)
+    return client.call(path, params, post_data, **kwargs)
 
 def _enum(fn, args, kwargs):
     if 'nb' not in kwargs:
@@ -291,3 +302,7 @@ def tournament_standings_page(tournament_id, **kwargs):
 def tv_channels(**kwargs):
     """Wrapper for the `GET /tv/channels <https://github.com/ornicar/lila#get-tvchannels-fetch-current-tournaments>`_ endpoint."""
     return _api_get('/tv/channels', kwargs)
+
+def login(username, password, **kwargs):
+    cookie_jar = _api_post('/login', kwargs, {'username': username, 'password': password}, format=lichess.format.COOKIES)
+    return lichess.auth.Cookie(cookie_jar)
