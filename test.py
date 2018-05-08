@@ -87,7 +87,7 @@ class ApiIntegrationTestCase(unittest.TestCase):
 class PgnIntegrationTestCase(unittest.TestCase):
 
     def test_pychess(self):
-        api_game = lichess.api.game('Qa7FJNk2', with_moves=1)
+        api_game = lichess.api.game('Qa7FJNk2')
         game = chess.pgn.read_game(lichess.pgn.io_from_game(api_game))
         fen = game.end().board().fen()
         self.assertEqual(fen, '2k1Rbr1/1ppr1Np1/p6p/8/3p4/P2P3P/1PP2PP1/2KR4 b - - 2 19')

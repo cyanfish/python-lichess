@@ -15,7 +15,7 @@ def _cap(s):
     return s[0].upper() + s[1:]
 
 def from_game(game, headers=None):
-    """Converts a game from the lichess API to a PGN string.
+    """Converts a JSON game to a PGN string.
 
     :game: The game object.
     :headers: An optional dictionary with custom PGN headers.
@@ -37,7 +37,7 @@ def from_game(game, headers=None):
     result = '1/2-1/2' if _node(g, 'status') == 'draw' else '1-0' if _node(g, 'winner') == 'white' else '0-1' if _node(g, 'winner') == 'black' else '*'
     h = []
     h.append(("Event", "%s %s game" % ("Rated" if g["rated"] else "Casual", g["speed"])))
-    h.append(('Site', g['url']))
+    h.append(('Site', 'https://lichess.org/%s' % g['id']))
     h.append(('Date', datetime.fromtimestamp(int(g['createdAt']) / 1000.0).strftime('%Y.%m.%d')))
     h.append(('Round', '?'))
     h.append(('White', _node(g, 'players.white.userId') or '?'))
@@ -74,6 +74,7 @@ def io_from_game(game, headers=None):
     """Like :data:`~lichess.pgn.from_game`, except it wraps the result in :data:`StringIO`.
 
     This allows easy integration with the `python-chess <https://github.com/niklasf/python-chess>`_ library.
+    But if this is all you need, see the :mod:`lichess.format` module for an easier way.
 
     :game: The game object.
     :headers: An optional dictionary with custom PGN headers.
@@ -101,7 +102,7 @@ def _validate_games(games):
         raise ValueError('The games argument must be a list. You provided a paginator. Use [\'currentPageResults\'] to get the games list, or use an API method that returns a generator.')
 
 def from_games(games, headers=None):
-    """Converts an enumerable of games from the lichess API to a PGN string.
+    """Converts an enumerable of JSON games to a PGN string.
     
     :games: The enumerable of game objects.
     :headers: An optional dictionary with (shared) custom PGN headers.
@@ -117,7 +118,7 @@ def from_games(games, headers=None):
     return '\n'.join((from_game(g, headers) for g in games))
 
 def save_games(games, path, headers=None):
-    """Saves an enumerable of games from the lichess API to a PGN file.
+    """Saves an enumerable of JSON games to a PGN file.
 
     :games: The enumerable of game objects.
     :path: The path of the .pgn file to save.

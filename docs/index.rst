@@ -6,13 +6,15 @@ python-lichess: a client for the lichess.org API
    :caption: Contents
    
    api
-   api-config
+   format
+   auth
    pgn
+   api-config
 
 Introduction
 ------------
 
-This is a client library for the `lichess.org <https://lichess.org>`_ `API <https://github.com/ornicar/lila#http-api>`_. It is designed to be:
+This is a client library for the `lichess.org <https://lichess.org>`_ `API <https://lichess.org/api>`_. It is designed to be:
 
 * Easy to use
 
@@ -20,7 +22,7 @@ This is a client library for the `lichess.org <https://lichess.org>`_ `API <http
 
 * Adaptable to API changes
 
-* Easy to `integrate <pgn.html#lichess.pgn.io_from_game>`_ with `python-chess <https://github.com/niklasf/python-chess>`_
+* Easy to `integrate <format.html#lichess.format.PYCHESS>`_ with `python-chess <https://github.com/niklasf/python-chess>`_
 
 Have a look at some short examples. For more, check out the full doc in the table of contents.
 
@@ -45,21 +47,18 @@ Checking who's online and playing:
 Saving a PGN of a user's last 200 games:
 
 >>> import lichess.api
->>> import lichess.pgn
->>> import itertools
+>>> from lichess.format import SINGLE_PGN
 >>> 
->>> games = lichess.api.user_games('thibault', with_moves=1)
->>> last_200 = itertools.islice(games, 200)
->>> lichess.pgn.save_games(last_200, 'last200.pgn')
+>>> pgn = lichess.api.user_games('thibault', max=200, format=SINGLE_PGN)
+>>> with open('last200.pgn', 'w') as f:
+>>>    f.write(pgn)
 
 Integrating with `python-chess <https://github.com/niklasf/python-chess>`_:
 
 >>> import lichess.api
->>> import lichess.pgn
->>> import chess.pgn
+>>> from lichess.format import PYCHESS
 >>> 
->>> api_game = lichess.api.game('Qa7FJNk2', with_moves=1)
->>> game = chess.pgn.read_game(lichess.pgn.io_from_game(api_game))
+>>> game = lichess.api.game('Qa7FJNk2', format=PYCHESS)
 >>> print(game.end().board())
 . . k . R b r .
 . p p r . N p .

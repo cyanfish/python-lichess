@@ -49,6 +49,18 @@ class _Pgn(_FormatBase):
 
 
 PGN = _Pgn()
+"""Produces a PGN string, or a generator for PGN strings of each game.
+
+>>> from lichess.format import PGN
+>>>
+>>> pgn = lichess.api.game('Qa7FJNk2', format=PGN)
+>>> print(pgn)
+[Event "Casual rapid game"]
+...
+>>> pgns = lichess.api.user_games('cyanfish', max=50, format=PGN)
+>>> print(len(list(pgns)))
+50
+"""
 
 
 class _SinglePgn(_Pgn):
@@ -58,6 +70,15 @@ class _SinglePgn(_Pgn):
 
 
 SINGLE_PGN = _SinglePgn()
+"""Produces a PGN string, possibly containing multiple games.
+
+>>> from lichess.format import0 SINGLE_PGN
+>>>
+>>> pgn = lichess.api.user_games('cyanfish', max=50, format=SINGLE_PGN)
+>>> print(pgn)
+[Event "Casual rapid game"]
+...
+"""
 
 
 class _PyChess(_FormatBase):
@@ -78,6 +99,21 @@ class _PyChess(_FormatBase):
 
 
 PYCHESS = _PyChess()
+"""Produces a `python-chess <https://github.com/niklasf/python-chess>`_ game object, or a generator for multiple game objects.
+
+>>> from lichess.format import PYCHESS
+>>>
+>>> game = lichess.api.game('Qa7FJNk2', format=PYCHESS)
+>>> print(game.end().board())
+. . k . R b r .
+. p p r . N p .
+p . . . . . . p
+. . . . . . . .
+. . . p . . . .
+P . . P . . . P
+. P P . . P P .
+. . K R . . . .
+"""
 
 
 class _Json(_FormatBase):
@@ -99,6 +135,14 @@ class _Json(_FormatBase):
 
 
 JSON = _Json()
+"""Produces a dict representing a JSON object, or a generator for multiple dicts. This is the default format.
+
+>>> from lichess.format import JSON
+>>>
+>>> game = lichess.api.game('Qa7FJNk2', format=JSON) # or leave out
+>>> print(game['players']['white']['user']['id'])
+cyanfish
+"""
 
 
 class _Cookies(_FormatBase):

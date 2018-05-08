@@ -42,7 +42,7 @@ class DefaultApiClient(object):
         if max_retries is not None:
             self.max_retries = max_retries
     
-    def call(self, path, params=None, post_data=None, auth=lichess.auth.EMPTY, format=lichess.format.JSON, object_type=lichess.format.PUBLIC_API_OBJECT):
+    def call(self, path, params=None, post_data=None, auth=None, format=lichess.format.JSON, object_type=lichess.format.PUBLIC_API_OBJECT):
         """Makes an API call, prepending :data:`~lichess.api.DefaultApiClient.base_url` to the provided path. HTTP GET is used unless :data:`post_data` is provided.
 
         Consecutive calls use a 1s delay.
@@ -53,7 +53,9 @@ class DefaultApiClient(object):
         else:
             time.sleep(1)
         
-        if isinstance(auth, str):
+        if auth is None:
+            auth = lichess.auth.EMPTY
+        elif isinstance(auth, str):
             auth = lichess.auth.OAuthToken(auth)
         headers = auth.headers()
         stream = format.stream(object_type)
@@ -207,9 +209,29 @@ def user_activity(username, **kwargs):
 def game(game_id, **kwargs):
     """Wrapper for the `GET /api/game/{id} <https://github.com/ornicar/lila#get-apigameid-fetch-one-game-by-id>`_ endpoint.
 
-    >>> game = lichess.api.game('Qa7FJNk2', with_moves=1)
+    By default, returns a dict representing a JSON game object.
+    Use `format=PGN` for a PGN string or `format=PYCHESS` for a `python-chess <https://github.com/niklasf/python-chess>`_ game object.
+
+    >>> game = lichess.api.game('Qa7FJNk2')
     >>> print(game['moves'])
     e4 e5 Nf3 Nc6 Bc4 Qf6 d3 h6 ...
+
+    >>> from lichess.format import PGN, PYCHESS
+    >>> pgn = lichess.api.game('Qa7FJNk2', format=PGN)
+    >>> print(pgn)
+    [Event "Casual rapid game"]
+    ...
+
+    >>> game_obj = lichess.api.game('Qa7FJNk2', format=PYCHESS)
+    >>> print(game_obj.end().board())
+    . . k . R b r .
+    . p p r . N p .
+    p . . . . . . p
+    . . . . . . . .
+    . . . p . . . .
+    P . . P . . . P
+    . P P . . P P .
+    . . K R . . . .
     """
     return _api_get('/game/export/{}'.format(game_id), kwargs, object_type=lichess.format.GAME_OBJECT)
 
@@ -226,19 +248,35 @@ def games_by_ids_page(ids, **kwargs):
 
 def user_games(username, **kwargs):
     """Wrapper for the `GET /api/user/<username>/games <https://github.com/ornicar/lila#get-apiuserusernamegames-fetch-user-games>`_ endpoint.
-    Returns a generator that streams game data.
 
-    >>> import itertools
-    >>> 
-    >>> games = lichess.api.user_games('cyanfish', with_moves=1)
-    >>> first_500 = itertools.islice(games, 500)
-    >>> # Use itertools.ifilter in Python 2
-    >>> blitz_games = filter(lambda g: g['speed'] == 'blitz', first_500)
-    >>> won_games = filter(lambda g: g['players'].get(g.get('winner'), {}).get('userId') == 'cyanfish', blitz_games)
-    >>> first_10 = itertools.islice(won_games, 10)
-    >>> game_list = list(first_10)
-    >>> print(len(game_list))
-    10
+    By default, returns a generator that streams game objects.
+    Use `format=PGN` for a generator of game PGNs, `format=SINGLE_PGN` for a single PGN string, or `format=PYCHESS` for a generator of `python-chess <https://github.com/niklasf/python-chess>`_ game objects.
+
+    >>> games = lichess.api.user_games('cyanfish', max=50, perfType='blitz')
+    >>> print(next(games)['moves'])
+    e4 e5 Nf3 Nc6 Bc4 Qf6 d3 h6 ...
+
+    >>> from lichess.format import PGN, SINGLE_PGN, PYCHESS
+    >>> pgns = lichess.api.user_games('cyanfish', max=50, format=PGN)
+    >>> print(next(pgns))
+    [Event "Casual rapid game"]
+    ...
+    
+    >>> pgn = lichess.api.user_games('cyanfish', max=50, format=SINGLE_PGN)
+    >>> print(pgn)
+    [Event "Casual rapid game"]
+    ...
+
+    >>> game_objs = lichess.api.user_games('cyanfish', max=50, format=PYCHESS)
+    >>> print(next(game_objs).end().board())
+    . . k . R b r .
+    . p p r . N p .
+    p . . . . . . p
+    . . . . . . . .
+    . . . p . . . .
+    P . . P . . . P
+    . P P . . P P .
+    . . K R . . . .
     """
     return _api_get('/games/export/{}'.format(username), kwargs, object_type=lichess.format.GAME_STREAM_OBJECT)
 
