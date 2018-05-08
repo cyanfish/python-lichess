@@ -189,7 +189,7 @@ def users_status(ids, **kwargs):
     Note: This endpoint is cheap and not rate-limited. Use it instead of :data:`~lichess.api.users_by_ids` when possible.
 
     >>> users = lichess.api.users_status(['thibault', 'cyanfish'])
-    >>> online_count = len([u for u in users if u['online']])
+    >>> online_count = len([u for u in users if u.get('online')])
     >>> print(online_count)
     1
     """

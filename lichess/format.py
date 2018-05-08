@@ -15,7 +15,7 @@ def stream_pgns(resp):
         buffer.append(line.decode('utf-8'))
         if buffer[-2:] == ['', '']:
             yield '\n'.join(buffer)
-            buffer.clear()
+            buffer = []
     if len(buffer) > 3:
         yield '\n'.join(buffer)
 

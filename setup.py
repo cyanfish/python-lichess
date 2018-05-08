@@ -16,7 +16,7 @@ setuptools.setup(
     license="GPL3",
     keywords="chess lichess api",
     url="https://github.com/cyanfish/python-lichess",
-    packages=["lichess.api", "lichess.pgn"],
+    packages=["lichess"],
     install_requires=['requests', 'six'],
     python_requires=">=2.7,!=3.0.*,!=3.1.*,!=3.2.*",
     classifiers=[

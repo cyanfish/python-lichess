@@ -1,5 +1,6 @@
 import lichess.api
 import lichess.pgn
+import lichess.format
 import chess.pgn
 import itertools
 import unittest
@@ -28,7 +29,7 @@ class ApiIntegrationTestCase(unittest.TestCase):
     
     def test_users_status(self):
         users = lichess.api.users_status(['thibault', 'cyanfish'])
-        online_count = len([u for u in users if u['online']])
+        online_count = len([u for u in users if u.get('online')])
         self.assertEqual(type(online_count), int)
     
     def test_user_activity(self):
@@ -36,8 +37,16 @@ class ApiIntegrationTestCase(unittest.TestCase):
         self.assertEqual(type(activity), list)
     
     def test_game(self):
-        game = lichess.api.game('Qa7FJNk2', with_moves=1)
+        game = lichess.api.game('Qa7FJNk2')
         self.assertEqual(type(game['moves']), type(u''))
+
+    def test_game_pgn(self):
+        pgn = lichess.api.game('Qa7FJNk2', format=lichess.format.PGN)
+        self.assertEqual(pgn[:7], '[Event ')
+
+    def test_game_pychess(self):
+        game = lichess.api.game('Qa7FJNk2', format=lichess.format.PYCHESS)
+        self.assertTrue('Event' in game.headers)
     
     def test_games_by_ids(self):
         games = lichess.api.games_by_ids(['Qa7FJNk2', '4M973EVR'], with_moves=1)
@@ -49,13 +58,32 @@ class ApiIntegrationTestCase(unittest.TestCase):
         self.assertNotEqual(moves1, moves2)
 
     def test_user_games(self):
-        games = lichess.api.user_games('thibault', with_moves=1, nb=10)
+        games = lichess.api.user_games('thibault', max=5)
         lst = list(itertools.islice(games, 2))
         moves1 = lst[0]['moves']
         moves2 = lst[1]['moves']
         self.assertEqual(type(moves1), type(u''))
         self.assertEqual(type(moves2), type(u''))
         self.assertNotEqual(moves1, moves2)
+
+    def test_user_games_pgn(self):
+        pgns = lichess.api.user_games('thibault', max=5, format=lichess.format.PGN)
+        lst = list(itertools.islice(pgns, 2))
+        self.assertEqual(lst[0][:7], '[Event ')
+        self.assertEqual(lst[1][:7], '[Event ')
+        self.assertNotEqual(lst[0], lst[1])
+
+    def test_user_games_single_pgn(self):
+        pgn = lichess.api.user_games('thibault', max=5, format=lichess.format.SINGLE_PGN)
+        lst = list(itertools.islice(pgn, 2))
+        self.assertEqual(pgn[:7], '[Event ')
+
+    def test_user_games_pychess(self):
+        games = lichess.api.user_games('thibault', max=5, format=lichess.format.PYCHESS)
+        lst = list(itertools.islice(games, 2))
+        self.assertTrue('Event' in lst[0].headers)
+        self.assertTrue('Event' in lst[1].headers)
+        self.assertNotEqual(lst[0], lst[1])
     
     def test_games_by_team(self):
         games = lichess.api.games_by_team('programfox-senseifox-fanclub', with_moves=1, nb=10)
