@@ -211,7 +211,7 @@ def game(game_id, **kwargs):
     >>> print(game['moves'])
     e4 e5 Nf3 Nc6 Bc4 Qf6 d3 h6 ...
     """
-    return _api_get('/api/game/{}'.format(game_id), kwargs)
+    return _api_get('/game/export/{}'.format(game_id), kwargs, object_type=lichess.format.GAME_OBJECT)
 
 def games_by_ids(ids, **kwargs):
     """Wrapper for the `POST /api/games <https://github.com/ornicar/lila#post-apigames-fetch-many-games-by-id>`_ endpoint.
