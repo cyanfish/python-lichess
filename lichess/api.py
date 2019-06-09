@@ -278,7 +278,7 @@ def user_games(username, **kwargs):
     . P P . . P P .
     . . K R . . . .
     """
-    return _api_get('/games/export/{}'.format(username), kwargs, object_type=lichess.format.GAME_STREAM_OBJECT)
+    return _api_get('/api/games/user/{}'.format(username), kwargs, object_type=lichess.format.GAME_STREAM_OBJECT)
 
 def games_by_team(team, **kwargs):
     """Wrapper for the `GET /api/games/team/<teamId> <https://github.com/ornicar/lila#get-apigamesteamteamid-fetch-games-between-players-of-a-team>`_ endpoint.
