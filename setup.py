@@ -10,7 +10,7 @@ def read_description():
 
 setuptools.setup(
     name="python-lichess",
-    version='0.5',
+    version='0.7',
     description='A client for the lichess.org API',
     long_description=read_description(),
     license="GPL3",
