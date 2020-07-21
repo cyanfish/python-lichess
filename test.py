@@ -2,6 +2,7 @@ import lichess.api
 import lichess.pgn
 import lichess.format
 import chess.pgn
+import io
 import itertools
 import unittest
 
@@ -119,6 +120,13 @@ class PgnIntegrationTestCase(unittest.TestCase):
         game = chess.pgn.read_game(lichess.pgn.io_from_game(api_game))
         fen = game.end().board().fen()
         self.assertEqual(fen, '2k1Rbr1/1ppr1Np1/p6p/8/3p4/P2P3P/1PP2PP1/2KR4 b - - 2 19')
+
+    def test_pgn_from_game(self):
+        api_game = lichess.api.game('9PzeRgcM', with_moves=1)
+        pgn = lichess.pgn.from_game(api_game)
+        game = chess.pgn.read_game(io.StringIO(pgn))
+        fen = game.end().board().fen()
+        self.assertEqual(fen, '2r5/p2Q1ppp/1p2k3/1Bb1P3/5B2/P7/1P3PPP/R3K2R b KQ - 0 21')
 
 if __name__ == '__main__':
     unittest.main()
