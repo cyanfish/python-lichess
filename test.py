@@ -36,6 +36,10 @@ class ApiIntegrationTestCase(unittest.TestCase):
         activity = lichess.api.user_activity('thibault')
         self.assertEqual(type(activity), list)
     
+    def test_current_game(self):
+        game = lichess.api.current_game('cyanfish')
+        self.assertEqual(type(game['moves']), type(u''))
+
     def test_game(self):
         game = lichess.api.game('Qa7FJNk2')
         self.assertEqual(type(game['moves']), type(u''))

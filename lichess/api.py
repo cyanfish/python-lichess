@@ -280,6 +280,12 @@ def user_games(username, **kwargs):
     """
     return _api_get('/api/games/user/{}'.format(username), kwargs, object_type=lichess.format.GAME_STREAM_OBJECT)
 
+
+def current_game(username, **kwargs):
+    """Wrapper for the `GET /api/user/<username>/current-game` endpoint.
+    Returns a single game."""
+    return _api_get('/api/user/{}/current-game'.format(username), kwargs, object_type=lichess.format.GAME_OBJECT)
+
 def games_by_team(team, **kwargs):
     """Wrapper for the `GET /api/games/team/<teamId> <https://github.com/ornicar/lila#get-apigamesteamteamid-fetch-games-between-players-of-a-team>`_ endpoint.
     Returns a generator that makes requests for additional pages as needed."""
