@@ -35,13 +35,13 @@ class DefaultApiClient(object):
 
     max_retries = -1
     """The maximum number of retries after rate-limiting before an exception is raised. -1 for infinite retries."""
-    
+
     def __init__(self, base_url=None, max_retries=None):
         if base_url is not None:
             self.base_url = base_url
         if max_retries is not None:
             self.max_retries = max_retries
-    
+
     def call(self, path, params=None, post_data=None, auth=None, format=lichess.format.JSON, object_type=lichess.format.PUBLIC_API_OBJECT):
         """Makes an API call, prepending :data:`~lichess.api.DefaultApiClient.base_url` to the provided path. HTTP GET is used unless :data:`post_data` is provided.
 
@@ -52,7 +52,7 @@ class DefaultApiClient(object):
             DefaultApiClient._first_call = False
         else:
             time.sleep(1)
-        
+
         if auth is None:
             auth = lichess.auth.EMPTY
         elif isinstance(auth, str):
@@ -77,12 +77,12 @@ class DefaultApiClient(object):
                 retry_count += 1
             else:
                 break
-        
+
         if resp.status_code != 200:
             raise ApiHttpError(resp.status_code, url, resp.text)
-        
+
         return format.parse(object_type, resp)
-    
+
     def on_rate_limit(self, url, retry_count):
         """A handler called when HTTP 429 is received.
 
@@ -145,7 +145,7 @@ def _batch(fn, args, kwargs, batch_size):
 
 def user(username, **kwargs):
     """Wrapper for the `GET /api/user/<username> <https://github.com/ornicar/lila#get-apiuserusername-fetch-one-user>`_ endpoint.
-    
+
     >>> user = lichess.api.user('thibault')
     >>> print(user.get('perfs', {}).get('blitz', {}).get('rating'))
     1617
@@ -261,7 +261,7 @@ def user_games(username, **kwargs):
     >>> print(next(pgns))
     [Event "Casual rapid game"]
     ...
-    
+
     >>> pgn = lichess.api.user_games('cyanfish', max=50, format=SINGLE_PGN)
     >>> print(pgn)
     [Event "Casual rapid game"]
@@ -320,6 +320,11 @@ def tournament_standings_page(tournament_id, **kwargs):
 def tv_channels(**kwargs):
     """Wrapper for the `GET /tv/channels <https://github.com/ornicar/lila#get-tvchannels-fetch-current-tournaments>`_ endpoint."""
     return _api_get('/tv/channels', kwargs)
+
+def cloud_evaluation(**kwargs):
+    """Wrapper for the `GET api/cloud-eval` endpoint.
+    Entry data: fen, multiPv = 1 (numver of variations), variant = "standard". """
+    return _api_get('/api/cloud-eval', kwargs)
 
 def login(username, password):
     cookie_jar = _api_post('/login', {'format': lichess.format.COOKIES}, {'username': username, 'password': password})
