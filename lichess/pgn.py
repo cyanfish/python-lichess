@@ -51,7 +51,8 @@ def from_game(game, headers=None):
         h.append(('FEN', g['initialFen']))
     elif g['variant'] != 'standard':
         h.append(('Variant', _cap(g['variant'])))
-    h.append(('TimeControl', _node(g, 'clock.initial') + '+' + _node(g, 'clock.increment')))
+    if g['speed'] != 'correspondence':
+        h.append(('TimeControl', _node(g, 'clock.initial') + '+' + _node(g, 'clock.increment')))
     moves = g['moves']
     pgn = ''
     for i in h:

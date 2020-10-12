@@ -35,6 +35,10 @@ class ApiIntegrationTestCase(unittest.TestCase):
     def test_user_activity(self):
         activity = lichess.api.user_activity('thibault')
         self.assertEqual(type(activity), list)
+    
+    def test_current_game(self):
+        game = lichess.api.current_game('cyanfish')
+        self.assertEqual(type(game['moves']), type(u''))
 
     def test_game(self):
         game = lichess.api.game('Qa7FJNk2')
@@ -125,6 +129,13 @@ class PgnIntegrationTestCase(unittest.TestCase):
         game = chess.pgn.read_game(lichess.pgn.io_from_game(api_game))
         fen = game.end().board().fen()
         self.assertEqual(fen, '2k1Rbr1/1ppr1Np1/p6p/8/3p4/P2P3P/1PP2PP1/2KR4 b - - 2 19')
+
+    def test_pgn_from_game(self):
+        api_game = lichess.api.game('9PzeRgcM', with_moves=1)
+        pgn = lichess.pgn.io_from_game(api_game)
+        game = chess.pgn.read_game(pgn)
+        fen = game.end().board().fen()
+        self.assertEqual(fen, '2r5/p2Q1ppp/1p2k3/1Bb1P3/5B2/P7/1P3PPP/R3K2R b KQ - 0 21')
 
 if __name__ == '__main__':
     unittest.main()
