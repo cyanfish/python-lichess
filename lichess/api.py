@@ -153,7 +153,7 @@ def user(username, **kwargs):
     return _api_get('/api/user/{}'.format(username), kwargs)
 
 def users_by_team(team, **kwargs):
-    """Wrapper for the `GET /api/user <https://github.com/ornicar/lila#get-apiuser-fetch-many-users-from-a-team>`_ endpoint.
+    """Wrapper for the `GET /api/team/{name}/users <https://github.com/ornicar/lila#get-apiuser-fetch-many-users-from-a-team>`_ endpoint.
     Returns a generator that streams the user data.
 
     >>> users = lichess.api.users_by_team('coders')
@@ -161,7 +161,7 @@ def users_by_team(team, **kwargs):
     >>> print(ratings)
     [1349, 1609, ...]
     """
-    return _api_get('/team/{}/users'.format(team), kwargs, object_type=lichess.format.STREAM_OBJECT)
+    return _api_get('/api/team/{}/users'.format(team), kwargs, object_type=lichess.format.STREAM_OBJECT)
 
 def users_by_ids(ids, **kwargs):
     """Wrapper for the `POST /api/users <https://github.com/ornicar/lila#post-apiusers-fetch-many-users-by-id>`_ endpoint.
@@ -236,15 +236,15 @@ def game(game_id, **kwargs):
     return _api_get('/game/export/{}'.format(game_id), kwargs, object_type=lichess.format.GAME_OBJECT)
 
 def games_by_ids(ids, **kwargs):
-    """Wrapper for the `POST /api/games <https://github.com/ornicar/lila#post-apigames-fetch-many-games-by-id>`_ endpoint.
+    """Wrapper for the `POST /games/export/_ids <https://github.com/ornicar/lila#post-apigames-fetch-many-games-by-id>`_ endpoint.
     Returns a generator that splits the IDs into multiple requests as needed."""
     return _batch(games_by_ids_page, [ids], kwargs, 300)
 
 def games_by_ids_page(ids, **kwargs):
-    """Wrapper for the `POST /api/games <https://github.com/ornicar/lila#post-apigames-fetch-many-games-by-id>`_ endpoint.
+    """Wrapper for the `POST /games/export/_ids <https://github.com/ornicar/lila#post-apigames-fetch-many-games-by-id>`_ endpoint.
     Use :data:`~lichess.api.games_by_ids` to avoid manual pagination.
     """
-    return _api_post('/api/games', kwargs, ','.join(ids))
+    return _api_post('/games/export/_ids', kwargs, ','.join(ids), object_type=lichess.format.GAME_STREAM_OBJECT)
 
 def user_games(username, **kwargs):
     """Wrapper for the `GET /api/user/<username>/games <https://github.com/ornicar/lila#get-apiuserusernamegames-fetch-user-games>`_ endpoint.
@@ -285,17 +285,6 @@ def current_game(username, **kwargs):
     """Wrapper for the `GET /api/user/<username>/current-game` endpoint.
     Returns a single game."""
     return _api_get('/api/user/{}/current-game'.format(username), kwargs, object_type=lichess.format.GAME_OBJECT)
-
-def games_by_team(team, **kwargs):
-    """Wrapper for the `GET /api/games/team/<teamId> <https://github.com/ornicar/lila#get-apigamesteamteamid-fetch-games-between-players-of-a-team>`_ endpoint.
-    Returns a generator that makes requests for additional pages as needed."""
-    return _enum(games_by_team_page, [team], kwargs)
-
-def games_by_team_page(team, **kwargs):
-    """Wrapper for the `GET /api/games/team/<teamId> <https://github.com/ornicar/lila#get-apigamesteamteamid-fetch-games-between-players-of-a-team>`_ endpoint.
-    Use :data:`~lichess.api.games_by_team` to avoid manual pagination.
-    """
-    return _api_get('/api/games/team/{}'.format(team), kwargs)
 
 def tournaments(**kwargs):
     """Wrapper for the `GET /api/tournament <https://github.com/ornicar/lila#get-apitournament-fetch-current-tournaments>`_ endpoint."""

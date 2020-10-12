@@ -68,7 +68,6 @@ class ApiIntegrationTestCase(unittest.TestCase):
         moves2 = lst[1]['moves']
         self.assertEqual(type(moves1), type(u''))
         self.assertEqual(type(moves2), type(u''))
-        self.assertNotEqual(moves1, moves2)
 
     def test_user_games_pgn(self):
         pgns = lichess.api.user_games('thibault', max=5, format=lichess.format.PGN)
@@ -88,15 +87,6 @@ class ApiIntegrationTestCase(unittest.TestCase):
         self.assertTrue('Event' in lst[0].headers)
         self.assertTrue('Event' in lst[1].headers)
         self.assertNotEqual(lst[0], lst[1])
-    
-    def test_games_by_team(self):
-        games = lichess.api.games_by_team('programfox-senseifox-fanclub', with_moves=1, nb=10)
-        lst = list(itertools.islice(games, 2))
-        moves1 = lst[0]['moves']
-        moves2 = lst[1]['moves']
-        self.assertEqual(type(moves1), type(u''))
-        self.assertEqual(type(moves2), type(u''))
-        self.assertNotEqual(moves1, moves2)
     
     def test_tournaments(self):
         tourns = lichess.api.tournaments()
@@ -124,10 +114,9 @@ class PgnIntegrationTestCase(unittest.TestCase):
         fen = game.end().board().fen()
         self.assertEqual(fen, '2k1Rbr1/1ppr1Np1/p6p/8/3p4/P2P3P/1PP2PP1/2KR4 b - - 2 19')
 
-    def test_pgn_from_game(self):
-        api_game = lichess.api.game('9PzeRgcM', with_moves=1)
-        pgn = lichess.pgn.io_from_game(api_game)
-        game = chess.pgn.read_game(pgn)
+    def test_pychess_correspondence(self):
+        api_game = lichess.api.game('9PzeRgcM')
+        game = chess.pgn.read_game(lichess.pgn.io_from_game(api_game))
         fen = game.end().board().fen()
         self.assertEqual(fen, '2r5/p2Q1ppp/1p2k3/1Bb1P3/5B2/P7/1P3PPP/R3K2R b KQ - 0 21')
 
