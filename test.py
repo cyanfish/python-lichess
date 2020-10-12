@@ -112,10 +112,10 @@ class ApiIntegrationTestCase(unittest.TestCase):
         channels = lichess.api.tv_channels()
         self.assertEqual(type(channels['Blitz']), dict)
 
-    def test_cloud_evaluation(self):
-        evaluation = lichess.api.cloud_evaluation(fen = "rnbqkbnr/ppp1pppp/8/3pP3/8/8/PPPP1PPP/RNBQKBNR b KQkq - 0 2", multiPv = 5, variant = "standard")
+    def test_cloud_eval(self):
+        evaluation = lichess.api.cloud_evaluation(fen="rnbqkbnr/ppp1pppp/8/3pP3/8/8/PPPP1PPP/RNBQKBNR b KQkq - 0 2", multiPv=5, variant="standard")
         pvs = evaluation['pvs']
-        self.assertEqual(evaluation['fan'], "rnbqkbnr/ppp1pppp/8/3pP3/8/8/PPPP1PPP/RNBQKBNR b KQkq - 0 2")
+        self.assertEqual(evaluation['fen'], "rnbqkbnr/ppp1pppp/8/3pP3/8/8/PPPP1PPP/RNBQKBNR b KQkq - 0 2")
         self.assertEqual(len(pvs), 5)
 
 class PgnIntegrationTestCase(unittest.TestCase):

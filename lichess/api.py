@@ -321,9 +321,9 @@ def tv_channels(**kwargs):
     """Wrapper for the `GET /tv/channels <https://github.com/ornicar/lila#get-tvchannels-fetch-current-tournaments>`_ endpoint."""
     return _api_get('/tv/channels', kwargs)
 
-def cloud_evaluation(**kwargs):
-    """Wrapper for the `GET api/cloud-eval` endpoint.
-    Entry data: fen, multiPv = 1 (numver of variations), variant = "standard". """
+def cloud_eval(fen, **kwargs):
+    """Wrapper for the `GET api/cloud-eval <https://lichess.org/api#operation/apiCloudEval>`_ endpoint. """
+    kwargs['fen'] = fen
     return _api_get('/api/cloud-eval', kwargs)
 
 def login(username, password):
