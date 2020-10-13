@@ -35,7 +35,7 @@ class ApiIntegrationTestCase(unittest.TestCase):
     def test_user_activity(self):
         activity = lichess.api.user_activity('thibault')
         self.assertEqual(type(activity), list)
-    
+
     def test_current_game(self):
         game = lichess.api.current_game('cyanfish')
         self.assertEqual(type(game['moves']), type(u''))
@@ -116,7 +116,7 @@ class ApiIntegrationTestCase(unittest.TestCase):
         self.assertEqual(type(channels['Blitz']), dict)
 
     def test_cloud_eval(self):
-        evaluation = lichess.api.cloud_evaluation(fen="rnbqkbnr/ppp1pppp/8/3pP3/8/8/PPPP1PPP/RNBQKBNR b KQkq - 0 2", multiPv=5, variant="standard")
+        evaluation = lichess.api.cloud_eval(fen="rnbqkbnr/ppp1pppp/8/3pP3/8/8/PPPP1PPP/RNBQKBNR b KQkq - 0 2", multiPv=5, variant="standard")
         pvs = evaluation['pvs']
         self.assertEqual(evaluation['fen'], "rnbqkbnr/ppp1pppp/8/3pP3/8/8/PPPP1PPP/RNBQKBNR b KQkq - 0 2")
         self.assertEqual(len(pvs), 5)
