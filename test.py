@@ -17,7 +17,7 @@ class ApiIntegrationTestCase(unittest.TestCase):
         lst = list(itertools.islice(users, 2))
         self.assertEqual(type(lst[0]['id']), str)
         self.assertEqual(len(lst), 2)
-    
+
     def test_users_by_ids(self):
         users = lichess.api.users_by_ids(['thibault', 'cyanfish'])
         lst = list(users)
@@ -26,16 +26,16 @@ class ApiIntegrationTestCase(unittest.TestCase):
         self.assertEqual(type(rating1), int)
         self.assertEqual(type(rating2), int)
         self.assertNotEqual(rating1, rating2)
-    
+
     def test_users_status(self):
         users = lichess.api.users_status(['thibault', 'cyanfish'])
         online_count = len([u for u in users if u.get('online')])
         self.assertEqual(type(online_count), int)
-    
+
     def test_user_activity(self):
         activity = lichess.api.user_activity('thibault')
         self.assertEqual(type(activity), list)
-    
+
     def test_current_game(self):
         game = lichess.api.current_game('cyanfish')
         self.assertEqual(type(game['moves']), type(u''))
@@ -51,7 +51,7 @@ class ApiIntegrationTestCase(unittest.TestCase):
     def test_game_pychess(self):
         game = lichess.api.game('Qa7FJNk2', format=lichess.format.PYCHESS)
         self.assertTrue('Event' in game.headers)
-    
+
     def test_games_by_ids(self):
         games = lichess.api.games_by_ids(['Qa7FJNk2', '4M973EVR'], with_moves=1)
         lst = list(games)
@@ -87,15 +87,15 @@ class ApiIntegrationTestCase(unittest.TestCase):
         self.assertTrue('Event' in lst[0].headers)
         self.assertTrue('Event' in lst[1].headers)
         self.assertNotEqual(lst[0], lst[1])
-    
+
     def test_tournaments(self):
         tourns = lichess.api.tournaments()
         self.assertGreater(len(tourns), 0)
-    
+
     def test_tournament(self):
         tourn = lichess.api.tournament('winter17')
         self.assertEqual(tourn['id'], 'winter17')
-    
+
     def test_tournament_standings(self):
         stands = lichess.api.tournament_standings('winter17')
         first_20 = list(itertools.islice(stands, 20))
@@ -105,6 +105,12 @@ class ApiIntegrationTestCase(unittest.TestCase):
     def test_tv_channels(self):
         channels = lichess.api.tv_channels()
         self.assertEqual(type(channels['Blitz']), dict)
+
+    def test_cloud_eval(self):
+        evaluation = lichess.api.cloud_eval(fen="rnbqkbnr/ppp1pppp/8/3pP3/8/8/PPPP1PPP/RNBQKBNR b KQkq - 0 2", multiPv=5, variant="standard")
+        pvs = evaluation['pvs']
+        self.assertEqual(evaluation['fen'], "rnbqkbnr/ppp1pppp/8/3pP3/8/8/PPPP1PPP/RNBQKBNR b KQkq - 0 2")
+        self.assertEqual(len(pvs), 5)
 
 class PgnIntegrationTestCase(unittest.TestCase):
 
