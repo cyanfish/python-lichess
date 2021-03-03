@@ -77,7 +77,7 @@ class DefaultApiClient(object):
                 time.sleep(60)
                 retry_count += 1
             elif resp.status_code == 502 or resp.status_code == 503:
-                self.on_lichess_down(retry_count)
+                self.on_api_down(retry_count)
                 time.sleep(60)
                 retry_count += 1
             else:
