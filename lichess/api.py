@@ -71,8 +71,13 @@ class DefaultApiClient(object):
                 resp = requests.post(url, params=params, data=post_data, headers=headers, cookies=cookies, stream=stream)
             else:
                 resp = requests.get(url, params, headers=headers, cookies=cookies, stream=stream)
+
             if resp.status_code == 429:
                 self.on_rate_limit(url, retry_count)
+                time.sleep(60)
+                retry_count += 1
+            elif resp.status_code == 502 or resp.status_code == 503:
+                self.on_api_down(retry_count)
                 time.sleep(60)
                 retry_count += 1
             else:
@@ -91,6 +96,13 @@ class DefaultApiClient(object):
         if self.max_retries != -1 and retry_count >= self.max_retries:
             raise ApiError('Max retries exceeded')
 
+    def on_api_down(self, retry_count):
+        """A handler called when HTTP 502 or HTTP 503 is received.
+
+        Raises an exception when :data:`~lichess.api.DefaultApiClient.max_retries` is exceeded.
+        """
+        if self.max_retries != -1 and retry_count >= self.max_retries:
+            raise ApiError('Max retries exceeded')
 
 default_client = DefaultApiClient()
 """The client object used to communicate with the lichess API.
